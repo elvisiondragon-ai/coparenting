@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppContext, Note } from "@/context/AppContext";
+import { useAppContext } from "@/context/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,9 +10,11 @@ import { Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const NotesPage = () => {
   const { setup, notes, addNote, removeNote } = useAppContext();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     content: '',
@@ -21,35 +23,35 @@ const NotesPage = () => {
   });
 
   const handleAdd = () => {
-    if (!form.content.trim()) { toast.error("Write something"); return; }
+    if (!form.content.trim()) { toast.error(t('notes.err_write')); return; }
     addNote({
       id: crypto.randomUUID(),
       date: format(new Date(), 'yyyy-MM-dd HH:mm'),
       author: form.author,
       content: form.content,
-      tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+      tags: form.tags.split(',').map(tag => tag.trim()).filter(Boolean),
     });
     setForm({ content: '', author: 'A', tags: '' });
     setOpen(false);
-    toast.success("Note added");
+    toast.success(t('notes.success_added'));
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between">
+    <div className="max-w-3xl mx-auto space-y-6 pb-10">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold mb-1">Notes & Reflections</h1>
-          <p className="text-muted-foreground">Shared journal for updates about your children.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold mb-1">{t('notes.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('notes.description')}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Add Note</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Add Note</DialogTitle></DialogHeader>
-            <div className="space-y-4">
+          <DialogTrigger asChild><Button className="w-full sm:w-auto shadow-sm"><Plus className="mr-2 h-4 w-4" /> {t('notes.add_note')}</Button></DialogTrigger>
+          <DialogContent className="max-w-[95vw] sm:max-w-lg rounded-xl">
+            <DialogHeader><DialogTitle>{t('notes.add_note')}</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
               <div>
-                <Label>Author</Label>
+                <Label>{t('notes.author')}</Label>
                 <Select value={form.author} onValueChange={(v: 'A' | 'B') => setForm(f => ({ ...f, author: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-muted/30"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="A">{setup.parentAName}</SelectItem>
                     <SelectItem value="B">{setup.parentBName}</SelectItem>
@@ -57,14 +59,14 @@ const NotesPage = () => {
                 </Select>
               </div>
               <div>
-                <Label>Note</Label>
-                <Textarea rows={5} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="How was the child's day? Any health updates, milestones..." />
+                <Label>{t('notes.note')}</Label>
+                <Textarea rows={5} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder={t('notes.placeholder_note')} className="bg-muted/30" />
               </div>
               <div>
-                <Label>Tags (comma-separated)</Label>
-                <input className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm" value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="health, school, milestone" />
+                <Label>{t('notes.tags')}</Label>
+                <input className="flex h-10 w-full rounded-md border bg-muted/30 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-primary outline-none" value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder={t('notes.placeholder_tags')} />
               </div>
-              <Button onClick={handleAdd} className="w-full">Add Note</Button>
+              <Button onClick={handleAdd} className="w-full h-11 mt-2">{t('notes.add_note')}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -72,7 +74,7 @@ const NotesPage = () => {
 
       <div className="space-y-4">
         {notes.length === 0 ? (
-          <Card><CardContent className="py-12 text-center text-muted-foreground">No notes yet. Start documenting important moments.</CardContent></Card>
+          <Card><CardContent className="py-12 text-center text-muted-foreground">{t('notes.no_notes')}</CardContent></Card>
         ) : (
           [...notes].reverse().map(note => (
             <motion.div key={note.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>

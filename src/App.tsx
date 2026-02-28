@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
 import SetupPage from "./pages/SetupPage";
 import SchedulePage from "./pages/SchedulePage";
 import CalendarPage from "./pages/CalendarPage";
@@ -27,6 +28,7 @@ const App = () => (
           <AppLayout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/setup" element={<SetupPage />} />
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/calendar" element={<CalendarPage />} />

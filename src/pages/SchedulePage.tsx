@@ -1,18 +1,14 @@
 import { useAppContext, CustodySlot } from "@/context/AppContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const SLOTS: (keyof CustodySlot)[] = ['earlyMorning', 'morning', 'afternoon', 'night'];
-const SLOT_LABELS: Record<string, string> = {
-  earlyMorning: '🌅 Early AM',
-  morning: '☀️ Morning',
-  afternoon: '🌤️ Afternoon',
-  night: '🌙 Night',
-};
 
 const SchedulePage = () => {
   const { setup, recurringSchedule, setRecurringSchedule } = useAppContext();
+  const { t } = useTranslation();
 
   const toggleSlot = (day: string, slot: keyof CustodySlot) => {
     const current = recurringSchedule[day];
@@ -25,10 +21,10 @@ const SchedulePage = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-display text-3xl font-bold mb-1">Recurring Schedule</h1>
+        <h1 className="font-display text-3xl font-bold mb-1">{t('schedule.title')}</h1>
         <p className="text-muted-foreground">
-          Define the default weekly custody pattern. Click a cell to toggle between{" "}
-          <span className="parent-a-text font-semibold">{setup.parentAName}</span> and{" "}
+          {t('schedule.description')}{" "}
+          <span className="parent-a-text font-semibold">{setup.parentAName}</span> {t('schedule.and')}{" "}
           <span className="parent-b-text font-semibold">{setup.parentBName}</span>.
         </p>
       </motion.div>
@@ -50,29 +46,31 @@ const SchedulePage = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium text-muted-foreground">Day</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">{t('schedule.day')}</th>
                   {SLOTS.map(slot => (
-                    <th key={slot} className="p-3 text-center font-medium text-muted-foreground">{SLOT_LABELS[slot]}</th>
+                    <th key={slot} className="p-3 text-center font-medium text-muted-foreground">{t(`schedule.slots.${slot}`)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {DAYS.map(day => (
                   <tr key={day} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="p-3 font-medium capitalize">{day}</td>
+                    <td className="p-3 font-medium capitalize sticky left-0 bg-background sm:bg-transparent shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] sm:shadow-none">{t(`schedule.days.${day}`)}</td>
                     {SLOTS.map(slot => {
                       const parent = recurringSchedule[day]?.[slot] || 'A';
+                      const parentName = parent === 'A' ? setup.parentAName : setup.parentBName;
                       return (
-                        <td key={slot} className="p-2 text-center">
+                        <td key={slot} className="p-1 sm:p-2 text-center min-w-[80px]">
                           <button
                             onClick={() => toggleSlot(day, slot)}
-                            className={`w-full py-2 rounded-md text-xs font-semibold transition-colors ${
+                            className={`w-full py-2 rounded-md text-[10px] sm:text-xs font-bold transition-colors truncate px-1 ${
                               parent === 'A'
                                 ? 'bg-parentA text-parentA-foreground hover:opacity-80'
                                 : 'bg-parentB text-parentB-foreground hover:opacity-80'
                             }`}
+                            title={parentName}
                           >
-                            {parent === 'A' ? setup.parentAName : setup.parentBName}
+                            {parentName}
                           </button>
                         </td>
                       );

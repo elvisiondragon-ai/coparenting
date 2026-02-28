@@ -4,6 +4,7 @@ import { CalendarDays, DollarSign, ListTodo, BookOpen, ArrowRight } from "lucide
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const fadeIn = {
   initial: { opacity: 0, y: 12 },
@@ -12,8 +13,10 @@ const fadeIn = {
 };
 
 const Dashboard = () => {
-  const { setup, expenses, tasks, notes, childSupport } = useAppContext();
+  const { setup, expenses, tasks, notes, childSupport, getCurrency } = useAppContext();
+  const { t } = useTranslation();
   const today = new Date();
+  const currency = getCurrency();
 
   const pendingTasks = tasks.filter(t => t.status !== 'done').length;
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -30,15 +33,15 @@ const Dashboard = () => {
   if (!setup.isConfigured) {
     return (
       <motion.div {...fadeIn} className="max-w-lg mx-auto text-center py-20">
-        <h1 className="font-display text-3xl font-bold mb-4">Welcome to CoParent</h1>
+        <h1 className="font-display text-3xl font-bold mb-4">{t('dashboard.welcome_title')}</h1>
         <p className="text-muted-foreground mb-8">
-          Set up your co-parenting tracker to get started. Configure parent names, children, and preferences.
+          {t('dashboard.welcome_desc')}
         </p>
         <Link
           to="/setup"
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
-          Get Started <ArrowRight className="h-4 w-4" />
+          {t('dashboard.get_started')} <ArrowRight className="h-4 w-4" />
         </Link>
       </motion.div>
     );
@@ -46,34 +49,34 @@ const Dashboard = () => {
 
   const statCards = [
     {
-      title: "Today",
+      title: t('dashboard.today'),
       value: format(today, "EEEE, MMM d"),
       subtitle: format(today, "yyyy"),
       icon: CalendarDays,
       color: "text-primary",
     },
     {
-      title: "Pending Tasks",
+      title: t('dashboard.pending_tasks'),
       value: pendingTasks.toString(),
-      subtitle: `${tasks.length} total tasks`,
+      subtitle: t('dashboard.total_tasks', { count: tasks.length }),
       icon: ListTodo,
       color: "text-warning",
     },
     {
-      title: "Total Expenses",
-      value: `${setup.currency}${totalExpenses.toLocaleString()}`,
+      title: t('dashboard.total_expenses'),
+      value: `${currency}${totalExpenses.toLocaleString()}`,
       subtitle: balance > 0
-        ? `${setup.parentBName} owes ${setup.currency}${Math.abs(balance).toFixed(0)}`
+        ? t('dashboard.owes', { parent: setup.parentBName, amount: `${currency}${Math.abs(balance).toFixed(0)}` })
         : balance < 0
-        ? `${setup.parentAName} owes ${setup.currency}${Math.abs(balance).toFixed(0)}`
-        : "Balanced",
+        ? t('dashboard.owes', { parent: setup.parentAName, amount: `${currency}${Math.abs(balance).toFixed(0)}` })
+        : t('dashboard.balanced'),
       icon: DollarSign,
       color: "text-success",
     },
     {
-      title: "Notes",
+      title: t('dashboard.notes'),
       value: notes.length.toString(),
-      subtitle: unpaidSupport > 0 ? `${unpaidSupport} unpaid support` : "All support paid",
+      subtitle: unpaidSupport > 0 ? t('dashboard.unpaid_support', { count: unpaidSupport }) : t('dashboard.all_support_paid'),
       icon: BookOpen,
       color: "text-accent",
     },
@@ -82,9 +85,9 @@ const Dashboard = () => {
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <motion.div {...fadeIn}>
-        <h1 className="font-display text-3xl font-bold mb-1">Dashboard</h1>
+        <h1 className="font-display text-3xl font-bold mb-1">{t('dashboard.dashboard_title')}</h1>
         <p className="text-muted-foreground">
-          Hello, {setup.parentAName} & {setup.parentBName} — here's your overview.
+          {t('dashboard.hello', { parentA: setup.parentAName, parentB: setup.parentBName })}
         </p>
       </motion.div>
 
@@ -109,11 +112,11 @@ const Dashboard = () => {
         <motion.div {...fadeIn} transition={{ delay: 0.3 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Upcoming Tasks</CardTitle>
+              <CardTitle className="text-lg">{t('dashboard.upcoming_tasks')}</CardTitle>
             </CardHeader>
             <CardContent>
               {tasks.filter(t => t.status !== 'done').length === 0 ? (
-                <p className="text-muted-foreground text-sm">No pending tasks. <Link to="/tasks" className="text-primary underline">Add one</Link></p>
+                <p className="text-muted-foreground text-sm">{t('dashboard.no_pending_tasks')} <Link to="/tasks" className="text-primary underline">{t('dashboard.add_one')}</Link></p>
               ) : (
                 <div className="space-y-3">
                   {tasks.filter(t => t.status !== 'done').slice(0, 5).map(task => (
@@ -121,7 +124,7 @@ const Dashboard = () => {
                       <div>
                         <p className="font-medium text-sm">{task.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          Due: {task.dueDate} · {task.assignedTo === 'A' ? setup.parentAName : task.assignedTo === 'B' ? setup.parentBName : 'Both'}
+                          {t('dashboard.due')}: {task.dueDate} · {task.assignedTo === 'A' ? setup.parentAName : task.assignedTo === 'B' ? setup.parentBName : t('dashboard.both')}
                         </p>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${
@@ -140,11 +143,11 @@ const Dashboard = () => {
         <motion.div {...fadeIn} transition={{ delay: 0.4 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Recent Notes</CardTitle>
+              <CardTitle className="text-lg">{t('dashboard.recent_notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               {recentNotes.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No notes yet. <Link to="/notes" className="text-primary underline">Add one</Link></p>
+                <p className="text-muted-foreground text-sm">{t('dashboard.no_notes_yet')} <Link to="/notes" className="text-primary underline">{t('dashboard.add_one')}</Link></p>
               ) : (
                 <div className="space-y-3">
                   {recentNotes.map(note => (

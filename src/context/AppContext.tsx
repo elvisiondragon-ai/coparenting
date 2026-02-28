@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
 
 export interface SetupConfig {
   parentAName: string;
@@ -70,10 +72,13 @@ interface AppState {
   childSupport: ChildSupport[];
   tasks: Task[];
   notes: Note[];
+  is_pro: boolean;
 }
 
 interface AppContextType extends AppState {
   updateSetup: (config: Partial<SetupConfig>) => void;
+  getCurrency: () => string;
+  restoreData: (data: AppState) => void;
   setRecurringSchedule: (day: string, slot: CustodySlot) => void;
   addException: (exception: CustodyException) => void;
   removeException: (id: string) => void;
@@ -105,7 +110,7 @@ const initialState: AppState = {
     parentAName: 'Parent A',
     parentBName: 'Parent B',
     children: ['Child'],
-    currency: '$',
+    currency: 'Rp',
     startYear: 2026,
     weekStart: 'monday',
     isConfigured: false,
@@ -116,24 +121,134 @@ const initialState: AppState = {
   childSupport: [],
   tasks: [],
   notes: [],
+  is_pro: false,
 };
 
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { i18n } = useTranslation();
+  const [session, setSession] = useState<any>(null);
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem('coparent-data');
     return saved ? JSON.parse(saved) : initialState;
   });
 
-  const persist = useCallback((newState: AppState) => {
+  // Handle Auth Session
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch data from database on login
+  useEffect(() => {
+    const fetchData = async () => {
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from('coparenting_profiles')
+          .select('data, is_pro')
+          .eq('user_id', session.user.id);
+
+        if (data && data.length > 0) {
+          const remoteData = data[0].data || {};
+          const remoteIsPro = !!data[0].is_pro;
+          
+          setState(prev => ({
+            ...initialState,
+            ...remoteData,
+            is_pro: remoteIsPro
+          }));
+          
+          if (data[0].data) {
+            localStorage.setItem('coparent-data', JSON.stringify(data[0].data));
+          }
+        }
+      }
+    };
+    fetchData();
+
+    // Subscribe to Realtime changes
+    let channel: any;
+    if (session?.user) {
+      channel = supabase
+        .channel(`sync-profile-${session.user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'coparenting_profiles',
+            filter: `user_id=eq.${session.user.id}`,
+          },
+          (payload) => {
+            if (payload.new) {
+              const newData = payload.new.data as AppState;
+              const newIsPro = !!payload.new.is_pro;
+              
+              setState(prev => {
+                const dataChanged = newData && JSON.stringify(prev) !== JSON.stringify({ ...newData, is_pro: newIsPro });
+                const proChanged = prev.is_pro !== newIsPro;
+
+                if (dataChanged || proChanged) {
+                  const updatedState = { ...(newData || prev), is_pro: newIsPro };
+                  if (newData) localStorage.setItem('coparent-data', JSON.stringify(newData));
+                  return updatedState;
+                }
+                return prev;
+              });
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [session]);
+
+  const persist = useCallback(async (newState: AppState) => {
     setState(newState);
     localStorage.setItem('coparent-data', JSON.stringify(newState));
-  }, []);
+
+    // Sync to Supabase if logged in
+    if (session?.user) {
+      try {
+        await supabase
+          .from('coparenting_profiles')
+          .update({ data: newState })
+          .eq('user_id', session.user.id);
+      } catch (err) {
+        console.error('Failed to sync with database:', err);
+      }
+    }
+  }, [session]);
 
   const updateSetup = (config: Partial<SetupConfig>) => {
     persist({ ...state, setup: { ...state.setup, ...config, isConfigured: true } });
   };
+
+  const restoreData = (data: AppState) => {
+    persist(data);
+  };
+
+  const getCurrency = useCallback(() => {
+    // If user explicitly configured a currency other than the default '$' or 'Rp' 
+    // we use it, otherwise we follow the language
+    if (state.setup.currency !== '$' && state.setup.currency !== 'Rp') {
+      return state.setup.currency;
+    }
+    return i18n.language === 'id' ? 'Rp' : '$';
+  }, [state.setup.currency, i18n.language]);
 
   const setRecurringSchedule = (day: string, slot: CustodySlot) => {
     persist({ ...state, recurringSchedule: { ...state.recurringSchedule, [day]: slot } });
@@ -191,7 +306,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      ...state, updateSetup, setRecurringSchedule, addException, removeException,
+      ...state, updateSetup, getCurrency, restoreData, setRecurringSchedule, addException, removeException,
       addExpense, removeExpense, addChildSupport, updateChildSupport,
       addTask, updateTask, removeTask, addNote, removeNote,
     }}>

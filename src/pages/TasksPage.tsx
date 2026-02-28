@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const PRIORITY_STYLES = {
   high: 'bg-destructive/10 text-destructive border-destructive/30',
@@ -20,6 +20,7 @@ const PRIORITY_STYLES = {
 
 const TasksPage = () => {
   const { setup, tasks, addTask, updateTask, removeTask } = useAppContext();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -29,7 +30,7 @@ const TasksPage = () => {
   });
 
   const handleAdd = () => {
-    if (!form.title.trim()) { toast.error("Enter a task title"); return; }
+    if (!form.title.trim()) { toast.error(t('tasks.err_title')); return; }
     addTask({
       id: crypto.randomUUID(),
       title: form.title,
@@ -40,57 +41,57 @@ const TasksPage = () => {
     });
     setForm({ title: '', assignedTo: 'both', dueDate: format(new Date(), 'yyyy-MM-dd'), priority: 'medium' });
     setOpen(false);
-    toast.success("Task added");
+    toast.success(t('tasks.success_added'));
   };
 
   const columns: { key: Task['status']; label: string }[] = [
-    { key: 'todo', label: 'To Do' },
-    { key: 'in-progress', label: 'In Progress' },
-    { key: 'done', label: 'Done' },
+    { key: 'todo', label: t('tasks.to_do') },
+    { key: 'in-progress', label: t('tasks.in_progress') },
+    { key: 'done', label: t('tasks.done') },
   ];
 
   const getAssigneeName = (a: Task['assignedTo']) =>
-    a === 'A' ? setup.parentAName : a === 'B' ? setup.parentBName : 'Both';
+    a === 'A' ? setup.parentAName : a === 'B' ? setup.parentBName : t('tasks.both');
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between">
+    <div className="max-w-6xl mx-auto space-y-6 pb-10">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold mb-1">Tasks</h1>
-          <p className="text-muted-foreground">Manage shared to-dos and responsibilities.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold mb-1">{t('tasks.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('tasks.description')}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Add Task</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Add Task</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div><Label>Title</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
-              <div className="grid grid-cols-3 gap-4">
+          <DialogTrigger asChild><Button className="w-full sm:w-auto shadow-sm"><Plus className="mr-2 h-4 w-4" /> {t('tasks.add_task')}</Button></DialogTrigger>
+          <DialogContent className="max-w-[95vw] sm:max-w-lg rounded-xl">
+            <DialogHeader><DialogTitle>{t('tasks.add_task')}</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-2">
+              <div><Label>{t('tasks.task_title')}</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="bg-muted/30" /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <Label>Assigned To</Label>
+                  <Label>{t('tasks.assigned_to')}</Label>
                   <Select value={form.assignedTo} onValueChange={(v: Task['assignedTo']) => setForm(f => ({ ...f, assignedTo: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-muted/30"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="A">{setup.parentAName}</SelectItem>
                       <SelectItem value="B">{setup.parentBName}</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
+                      <SelectItem value="both">{t('tasks.both')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div><Label>Due Date</Label><Input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} /></div>
+                <div><Label>{t('tasks.due_date')}</Label><Input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} className="bg-muted/30" /></div>
                 <div>
-                  <Label>Priority</Label>
+                  <Label>{t('tasks.priority')}</Label>
                   <Select value={form.priority} onValueChange={(v: Task['priority']) => setForm(f => ({ ...f, priority: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-muted/30"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="high">{t('tasks.high')}</SelectItem>
+                      <SelectItem value="medium">{t('tasks.medium')}</SelectItem>
+                      <SelectItem value="low">{t('tasks.low')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <Button onClick={handleAdd} className="w-full">Add Task</Button>
+              <Button onClick={handleAdd} className="w-full h-11 mt-2">{t('tasks.add_task')}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -123,20 +124,20 @@ const TasksPage = () => {
                       <span>{task.dueDate}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs px-2 py-0.5 rounded-full border ${PRIORITY_STYLES[task.priority]}`}>{task.priority}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${PRIORITY_STYLES[task.priority]}`}>{t(`tasks.${task.priority}`)}</span>
                       <Select value={task.status} onValueChange={(v: Task['status']) => updateTask(task.id, { status: v })}>
                         <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="todo">To Do</SelectItem>
-                          <SelectItem value="in-progress">In Progress</SelectItem>
-                          <SelectItem value="done">Done</SelectItem>
+                          <SelectItem value="todo">{t('tasks.to_do')}</SelectItem>
+                          <SelectItem value="in-progress">{t('tasks.in_progress')}</SelectItem>
+                          <SelectItem value="done">{t('tasks.done')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 ))}
                 {tasks.filter(t => t.status === col.key).length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4">No tasks</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">{t('tasks.no_tasks')}</p>
                 )}
               </CardContent>
             </Card>

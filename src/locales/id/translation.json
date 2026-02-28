@@ -12,6 +12,7 @@
   "dashboard": {
     "welcome_title": "Selamat Datang di Co Parenting eL Vision",
     "welcome_desc": "Atur pelacak co-parenting Anda untuk memulai. Konfigurasikan nama orang tua, anak, dan preferensi.",
+    "shared_account_notice": "Gunakan satu akun yang sama untuk kedua orang tua guna memastikan sinkronisasi data berjalan secara otomatis dan akurat.",
     "get_started": "Mulai",
     "dashboard_title": "Dashboard",
     "hello": "Halo, {{parentA}} & {{parentB}} — ini ringkasan Anda.",

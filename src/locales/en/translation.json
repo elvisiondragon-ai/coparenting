@@ -12,6 +12,7 @@
   "dashboard": {
     "welcome_title": "Welcome to Co Parenting eL Vision",
     "welcome_desc": "Set up your co-parenting tracker to get started. Configure parent names, children, and preferences.",
+    "shared_account_notice": "For optimal synchronization, please use one shared account for both parents.",
     "get_started": "Get Started",
     "dashboard_title": "Dashboard",
     "hello": "Hello, {{parentA}} & {{parentB}} — here's your overview.",

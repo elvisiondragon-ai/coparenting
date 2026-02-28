@@ -6,6 +6,9 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+
 const fadeIn = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
@@ -32,17 +35,26 @@ const Dashboard = () => {
 
   if (!setup.isConfigured) {
     return (
-      <motion.div {...fadeIn} className="max-w-lg mx-auto text-center py-20">
-        <h1 className="font-display text-3xl font-bold mb-4">{t('dashboard.welcome_title')}</h1>
-        <p className="text-muted-foreground mb-8">
-          {t('dashboard.welcome_desc')}
-        </p>
-        <Link
-          to="/setup"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
-        >
-          {t('dashboard.get_started')} <ArrowRight className="h-4 w-4" />
-        </Link>
+      <motion.div {...fadeIn} className="max-w-lg mx-auto text-center py-20 space-y-8">
+        <div>
+          <h1 className="font-display text-3xl font-bold mb-4">{t('dashboard.welcome_title')}</h1>
+          <p className="text-muted-foreground mb-8">
+            {t('dashboard.welcome_desc')}
+          </p>
+          <Link
+            to="/setup"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
+          >
+            {t('dashboard.get_started')} <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <Alert className="bg-blue-50 border-blue-200 text-blue-800 text-left shadow-sm">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-sm font-medium leading-relaxed">
+            {t('dashboard.shared_account_notice')}
+          </AlertDescription>
+        </Alert>
       </motion.div>
     );
   }
@@ -84,11 +96,20 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      <motion.div {...fadeIn}>
-        <h1 className="font-display text-3xl font-bold mb-1">{t('dashboard.dashboard_title')}</h1>
-        <p className="text-muted-foreground">
-          {t('dashboard.hello', { parentA: setup.parentAName, parentB: setup.parentBName })}
-        </p>
+      <motion.div {...fadeIn} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold mb-1">{t('dashboard.dashboard_title')}</h1>
+          <p className="text-muted-foreground">
+            {t('dashboard.hello', { parentA: setup.parentAName, parentB: setup.parentBName })}
+          </p>
+        </div>
+        
+        <Alert className="bg-blue-50 border-blue-200 text-blue-800 max-w-md shadow-sm">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-xs font-medium">
+            {t('dashboard.shared_account_notice')}
+          </AlertDescription>
+        </Alert>
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

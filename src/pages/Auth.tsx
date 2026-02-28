@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, Eye, EyeOff, Sparkles, Zap, User as UserIcon, MessageCircle, Baby } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Sparkles, Zap, User as UserIcon, MessageCircle, Baby, Info } from "lucide-react";
 import { iOSCacheCleaner } from "@/utils/iOSCacheCleaner";
+import { useTranslation } from "react-i18next";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function Auth() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -206,7 +209,7 @@ export function Auth() {
                         <div className="flex items-center justify-center mb-4">
                             <img src="/coparenting_icon.png" alt="Logo" className="w-20 h-20 object-contain" />
                         </div>
-                        <h1 className="text-2xl font-bold">CoParenting Tracker</h1>
+                        <h1 className="text-2xl font-bold">Co Parenting eL Vision</h1>
                         <p className="text-muted-foreground mt-2">Manage your family schedule</p>
                     </div>
                     <Card className="p-6">
@@ -244,7 +247,7 @@ export function Auth() {
             <div className="min-h-screen flex items-center justify-center p-4 bg-background">
                 <div className="w-full max-w-md text-center">
                     <img src="/coparenting_icon.png" alt="Logo" className="h-20 w-20 mx-auto object-contain mb-4" />
-                    <h1 className="text-2xl font-bold mb-8">CoParenting Tracker</h1>
+                    <h1 className="text-2xl font-bold mb-8">Co Parenting eL Vision</h1>
                     <Card className="p-6">
                         <Mail className="h-12 w-12 mx-auto text-primary mb-4" />
                         <h3 className="text-lg font-semibold mb-2">Check Email</h3>
@@ -263,13 +266,17 @@ export function Auth() {
                     <div className="flex items-center justify-center mb-4">
                         <img src="/coparenting_icon.png" alt="Logo" className="w-20 h-20 object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold">CoParenting Tracker</h1>
+                    <h1 className="text-2xl font-bold">Co Parenting eL Vision</h1>
                     <p className="text-muted-foreground mt-2">Manage your family schedule together</p>
                 </div>
                 <Card className="p-6">
-                    <p className="text-center text-sm font-medium text-primary mb-6 animate-pulse">
-                        *Satu akun untuk Ayah dan Ibu sekaligus yah agar bisa syncron dengan mudah
-                    </p>
+                    <Alert className="bg-blue-50 border-blue-200 text-blue-800 mb-6 shadow-sm">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <AlertDescription className="text-xs font-medium leading-relaxed">
+                            {t('dashboard.shared_account_notice')}
+                        </AlertDescription>
+                    </Alert>
+                    
                     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'signup')} className="w-full">
                         <TabsList className="grid w-full grid-cols-2 mb-6">
                             <TabsTrigger value="login" onClick={() => { setIsTabClicked(true); setTimeout(() => setIsTabClicked(false), 150); }}>

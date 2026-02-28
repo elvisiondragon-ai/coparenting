@@ -14,6 +14,7 @@ import ExpensesPage from "./pages/ExpensesPage";
 import ChildSupportPage from "./pages/ChildSupportPage";
 import TasksPage from "./pages/TasksPage";
 import NotesPage from "./pages/NotesPage";
+import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/child-support" element={<ChildSupportPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/notes" element={<NotesPage />} />
+              <Route path="/payment" element={<Payment />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>

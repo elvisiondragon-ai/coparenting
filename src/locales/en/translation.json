@@ -34,7 +34,8 @@
   },
   "sidebar": {
     "coparenting_tracker": "Co-Parenting Tracker",
-    "navigation": "Navigation"
+    "navigation": "Navigation",
+    "upgrade_pro": "Upgrade to PRO"
   },
   "setup": {
     "title": "Setup",

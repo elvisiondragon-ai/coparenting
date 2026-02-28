@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Settings, CalendarDays, CalendarRange, DollarSign,
-  Heart, ListTodo, BookOpen, Baby, Globe, LogIn, LogOut, User
+  Heart, ListTodo, BookOpen, Baby, Globe, LogIn, LogOut, User, Crown
 } from "lucide-react";
 import { useAppContext } from "@/context/AppContext";
 import { useTranslation } from "react-i18next";
@@ -109,9 +109,18 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         {session ? (
           <div className="flex flex-col gap-2">
-            {!collapsed && (
-              <div className="flex items-center gap-2 mb-2 px-2">
-                <div className="h-8 w-8 rounded-full bg-sidebar-primary/10 flex items-center justify-center">
+          {!collapsed && !is_pro && (
+            <Button 
+              onClick={() => navigate("/payment")}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none shadow-md mb-2"
+              size="sm"
+            >
+              <Crown className="mr-2 h-4 w-4" />
+              <span>{t('sidebar.upgrade_pro')}</span>
+            </Button>
+          )}
+          {!collapsed && (
+            <div className="flex items-center gap-2 mb-2 px-2">                <div className="h-8 w-8 rounded-full bg-sidebar-primary/10 flex items-center justify-center">
                   <User className="h-4 w-4 text-sidebar-primary" />
                 </div>
                 <div className="flex flex-col min-w-0">
